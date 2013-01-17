@@ -24,6 +24,10 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
+// Suppress CS0436 type T in file conflicts with the imported type 'type'. Using the one in 'file'
+// occurring when Xception is added to multiple projects in a single solution
+#pragma warning disable 436
+
 /// <summary>
 /// Creates information-rich exceptions.
 /// </summary>
@@ -300,5 +304,6 @@ internal static class CoreXceptionExtensions {
 			+ indexName + " " + reason
 		);
 	}
-
 }
+
+#pragma warning enable 436
