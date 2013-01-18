@@ -306,4 +306,4 @@ internal static class CoreXceptionExtensions {
 	}
 }
 
-#pragma warning enable 436
+#pragma warning restore 436
