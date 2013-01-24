@@ -1,7 +1,7 @@
 # Xception
 
 Xception is a micro-library dedicated entirely to the construction of exceptions.
-Xception assists you with the creation of information-rich exceptions while eliminating boilerplate and enhancing both readability refactorability.
+Xception assists you with the creation of information-rich exceptions while eliminating boilerplate and enhancing both readability and refactorability.
 
 Consider the following Xception as compared to traditional code throwing an exception containing an equivalent level of detail:
 
