@@ -1,6 +1,7 @@
 ﻿/*
 
 Xception.cs
+https://github.com/jcracknell/xception
 Copyright (c) 2012 James Cracknell
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,6 +20,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 */
+
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
