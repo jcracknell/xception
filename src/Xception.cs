@@ -41,7 +41,7 @@ internal static class Xception {
 /// <summary>
 /// Creates information-rich exceptions.
 /// </summary>
-public class XceptionBuilder {
+internal class XceptionBuilder {
 	private XceptionHelpers _helpers;
 
 	public XceptionBuilder() {
@@ -51,7 +51,7 @@ public class XceptionBuilder {
 	public XceptionHelpers Helpers { get { return _helpers; } }
 }
 
-public class XceptionHelpers {
+internal class XceptionHelpers {
 	private static readonly char[] LITERALENCODE_ESCAPE_CHARS;
 	private static readonly char[] HEX_DIGIT = "0123456789abcdef".ToCharArray();
 	private static readonly MethodInfo objectToString = typeof(object).GetMethod("ToString");
