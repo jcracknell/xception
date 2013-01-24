@@ -143,6 +143,15 @@ public class XceptionHelpers {
 
 		return sb.Append('"').ToString();
 	}
+
+	/// <summary>
+	/// Converts the provided object <paramref name="o"/> to a string using its ToString() implementation, preventing or catching any exceptions which may occur.
+	/// </summary>
+	public string SafeToString(object o) {
+		if(null == o) return "<NULL>";
+		try { return o.ToString(); }
+		catch { return "<TOSTRING_EXCEPTION>"; }
+	}
 	
 	/// <summary>
 	/// Trys to compile and invoke the provided <paramref name="expression"/>, assigning the result to <paramref name="value"/>.
@@ -195,15 +204,14 @@ internal static class CoreXceptionExtensions {
 	/// </summary>
 	/// <typeparam name="T">The type of the argument identified by the provided <see cref="System.Linq.Expressions.Expression"/>.</typeparam>
 	/// <param name="argument">The argument which is invalid.</param>
-	/// <param name="reason">The reason the argument is invalid.</param>
+	/// <param name="reason">Reason why the <paramref name="argument"/> is invalid, to be converted to a string.</param>
+	/// <param name="reason">Continued reason why the <paramref name="argument"/> is invalid, to be converted to strings.</param>
 	/// <returns>
 	/// An <see cref="ArgumentException"/> indicating that the <paramref name="argument"/> identified by the provided
 	/// <see cref="System.Linq.Expressions.Expression"/> is invalid for the specified <paramref name="reason"/>.
 	/// </returns>
-	public static ArgumentException Argument<T>(this XceptionBuilder e, Expression<Func<T>> argument, string reason) {
+	public static ArgumentException Argument<T>(this XceptionBuilder e, Expression<Func<T>> argument, object reason, params object[] reasonContinuation) {
 		if(null == argument) throw Xception.Because.ArgumentNull(() => argument);
-		if(null == reason) throw Xception.Because.ArgumentNull(() => reason);
-		if(0 == reason.Length) throw Xception.Because.Argument(() => reason, "cannot be empty");
 
 		var argumentMember = e.Helpers.GetMemberInfoFromExpression(argument);
 		if(MemberTypes.Field != argumentMember.MemberType)
@@ -213,11 +221,16 @@ internal static class CoreXceptionExtensions {
 		var argumentValue = e.Helpers.GetExpressionValue(argument);
 
 		// Parameters are backwards on this one for some reason
-		return new ArgumentException(
-			"Argument " + e.Helpers.LiteralEncode(argumentName) + " with value " + e.Helpers.GetStringRepresentation(argumentValue) + " is invalid: "
-			+ argumentName + " " + reason.Trim(),
-			argumentName
-		);
+		var message = new StringBuilder()
+			.Append("Argument ").Append(e.Helpers.LiteralEncode(argumentName))
+			.Append(" with value ").Append(e.Helpers.GetStringRepresentation(argumentValue))
+			.Append(" is invalid: ").Append(argumentName).Append(" ");;
+
+		message.Append(e.Helpers.SafeToString(reason));
+		foreach(var r in reasonContinuation)
+			message.Append(e.Helpers.SafeToString(r));
+
+		return new ArgumentException(message.ToString(), argumentName);
 	}
 
 	/// <summary>
@@ -256,15 +269,14 @@ internal static class CoreXceptionExtensions {
 	/// </summary>
 	/// <typeparam name="T">The type of the argument identified by the provided <see cref="System.Linq.Expressions.Expression"/>.</typeparam>
 	/// <param name="argument">An expression identifying the argument which is out of range.</param>
-	/// <param name="reason">The reason the argument is out of range.</param>
+	/// <param name="reason">Reason why the <paramref name="argument"/> is out of range, to be converted to a string.</param>
+	/// <param name="reasonContinuation">Continued reason the <paramref name="argument"/> is out of range, to be converted to strings.</param>
 	/// <returns>
 	/// Generate an <see cref="System.ArgumentOutOfRangeException"/> indicating that the <paramref name="argument"/> identified
 	/// by the provided <see cref="System.Linq.Expressions.Expression"/> is out of range for the specified <paramref name="reason"/>.
 	/// </returns>
-	public static ArgumentOutOfRangeException ArgumentOutOfRange<T>(this XceptionBuilder e, Expression<Func<T>> argument, string reason) {
+	public static ArgumentOutOfRangeException ArgumentOutOfRange<T>(this XceptionBuilder e, Expression<Func<T>> argument, object reason, params object[] reasonContinuation) {
 		if(null == argument) throw Xception.Because.ArgumentNull(() => argument);
-		if(null == reason) throw Xception.Because.ArgumentNull(() => reason);
-		if(0 == reason.Length) throw Xception.Because.Argument(() => reason, "cannot be empty");
 
 		var argumentMember = e.Helpers.GetMemberInfoFromExpression(argument);
 		if(MemberTypes.Field != argumentMember.MemberType)
@@ -273,11 +285,16 @@ internal static class CoreXceptionExtensions {
 		var argumentName = argumentMember.Name;
 		var argumentValue = e.Helpers.GetExpressionValue(argument);
 
-		return new ArgumentOutOfRangeException(
-			argumentName,
-			"Argument " + e.Helpers.LiteralEncode(argumentName) + " with value " + e.Helpers.GetStringRepresentation(argumentValue) + " is out of range: "
-			+ argumentName + " " + reason.Trim()
-		);
+		var message = new StringBuilder()
+			.Append("Argument ").Append(e.Helpers.LiteralEncode(argumentName))
+			.Append(" with value ").Append(e.Helpers.GetStringRepresentation(argumentValue))
+			.Append(" is out of range: ").Append(argumentName).Append(" ");
+
+		message.Append(e.Helpers.SafeToString(reason));
+		foreach(var r in reasonContinuation)
+			message.Append(e.Helpers.SafeToString(r));
+
+		return new ArgumentOutOfRangeException(argumentName, message.ToString());
 	}
 
 	/// <summary>
@@ -286,23 +303,28 @@ internal static class CoreXceptionExtensions {
 	/// </summary>
 	/// <typeparam name="T">The type of the index identified by the provided <see cref="System.Linq.Expressions.Expression"/>.</typeparam>
 	/// <param name="index">An expression identifying the index value which is out of range.</param>
-	/// <param name="reason"></param>
+	/// <param name="reason">Reason why the identified <paramref name="index"/> is out of range, to be converted to a string.</param>
+	/// <param name="reasonContinuation">Continued reason why the identified <paramref name="index"/> is out of range, to be converted to strings.</param>
 	/// <returns>
 	/// An <see cref="System.IndexOutOfRangeException"/> indicating that the <paramref name="index"/> identified by the
 	/// provided <see cref="System.Linq.Expressions.Expression"/> is out of range for the specified <paramref name="reason"/>.
 	/// </returns>
-	public static IndexOutOfRangeException IndexOutOfRange<T>(this XceptionBuilder e, Expression<Func<T>> index, string reason) {
+	public static IndexOutOfRangeException IndexOutOfRange<T>(this XceptionBuilder e, Expression<Func<T>> index, object reason, params object[] reasonContinuation) {
 		if(null == index) throw Xception.Because.ArgumentNull(() => index);
-		if(null == reason) throw Xception.Because.ArgumentNull(() => reason);
-		if(0 == reason.Length) throw Xception.Because.Argument(() => reason, "cannot be empty");
 
 		var indexName = e.Helpers.GetMemberInfoFromExpression(index).Name;
 		var indexValue = e.Helpers.GetExpressionValue(index);
 
-		return new IndexOutOfRangeException(
-			"Index " + e.Helpers.LiteralEncode(indexName) + " with value " + e.Helpers.GetStringRepresentation(indexValue) + " is out of range: "
-			+ indexName + " " + reason
-		);
+		var message = new StringBuilder()
+			.Append("Index ").Append(e.Helpers.LiteralEncode(indexName))
+			.Append(" with value ").Append(e.Helpers.GetStringRepresentation(indexValue))
+			.Append(" is out of range: ").Append(indexName).Append(" ");
+
+		message.Append(e.Helpers.SafeToString(reason));
+		foreach(var r in reasonContinuation)
+			message.Append(e.Helpers.SafeToString(r));
+
+		return new IndexOutOfRangeException(message.ToString());
 	}
 }
 

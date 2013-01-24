@@ -20,18 +20,22 @@ namespace Tests.Tests {
 				.And.ParamName.Should().Be("argument");
 		}
 
-		[Fact] public void Argument_should_throw_exception_when_reason_null() {
-			int field = 0;
-			Xception.Because.Invoking(x => x.Argument(() => field, null))
-				.ShouldThrow<ArgumentNullException>("because a reason for the exception must be provided")
-				.And.ParamName.Should().Be("reason");
+		[Fact] public void Argument_should_generate_correct_message_for_single_reason() {
+			int foo = 100;
+			Xception.Because.Argument(() => foo, "reason1")
+			.Message.Should().Be("Argument \"foo\" with value \"100\" is invalid: foo reason1\r\nParameter name: foo");
 		}
 
-		[Fact] public void Argument_should_throw_exception_when_reason_empty() {
-			int field = 0;
-			Xception.Because.Invoking(x => x.Argument(() => field, ""))
-				.ShouldThrow<ArgumentException>("because a reason for the exception must be provided")
-				.And.ParamName.Should().Be("reason");
+		[Fact] public void Argument_should_generate_correct_message_for_null_reason() {
+			int foo = 100;
+			Xception.Because.Argument(() => foo, null)
+			.Message.Should().Be("Argument \"foo\" with value \"100\" is invalid: foo <NULL>\r\nParameter name: foo");
+		}
+
+		[Fact] public void Argument_should_generate_correct_message_for_multiple_reasons() {
+			int foo = 100;
+			Xception.Because.Argument(() => foo, "reason1", "reason2")
+			.Message.Should().Be("Argument \"foo\" with value \"100\" is invalid: foo reason1reason2\r\nParameter name: foo");
 		}
 	}
 }
