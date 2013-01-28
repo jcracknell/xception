@@ -147,6 +147,29 @@ internal class XceptionHelpers {
 	}
 
 	/// <summary>
+	/// Convert the provided reasons arguments to a single space-separated string.
+	/// </summary>
+	public string ReasonsToString(object reason, params object[] reasonContinuation) {
+		var sb = new StringBuilder(SafeToString(reason));
+
+		var enumerator = reasonContinuation.GetEnumerator();
+		if(!enumerator.MoveNext())
+			return sb.ToString();
+
+		sb.Append(' ');
+		for(;;) {
+			sb.Append(SafeToString(enumerator.Current));
+
+			if(!enumerator.MoveNext())
+				break;
+
+			sb.Append(' ');
+		}
+		
+		return sb.ToString();
+	}
+
+	/// <summary>
 	/// Converts the provided object <paramref name="o"/> to a string using its ToString() implementation, preventing or catching any exceptions which may occur.
 	/// </summary>
 	public string SafeToString(object o) {
@@ -226,11 +249,8 @@ internal static class CoreXceptionExtensions {
 		var message = new StringBuilder()
 			.Append("Argument ").Append(e.Helpers.LiteralEncode(argumentName))
 			.Append(" with value ").Append(e.Helpers.GetStringRepresentation(argumentValue))
-			.Append(" is invalid: ").Append(argumentName).Append(" ");;
-
-		message.Append(e.Helpers.SafeToString(reason));
-		foreach(var r in reasonContinuation)
-			message.Append(e.Helpers.SafeToString(r));
+			.Append(" is invalid: ").Append(argumentName).Append(" ")
+			.Append(e.Helpers.ReasonsToString(reason, reasonContinuation));
 
 		return new ArgumentException(message.ToString(), argumentName);
 	}
@@ -290,11 +310,8 @@ internal static class CoreXceptionExtensions {
 		var message = new StringBuilder()
 			.Append("Argument ").Append(e.Helpers.LiteralEncode(argumentName))
 			.Append(" with value ").Append(e.Helpers.GetStringRepresentation(argumentValue))
-			.Append(" is out of range: ").Append(argumentName).Append(" ");
-
-		message.Append(e.Helpers.SafeToString(reason));
-		foreach(var r in reasonContinuation)
-			message.Append(e.Helpers.SafeToString(r));
+			.Append(" is out of range: ").Append(argumentName).Append(" ")
+			.Append(e.Helpers.ReasonsToString(reason, reasonContinuation));
 
 		return new ArgumentOutOfRangeException(argumentName, message.ToString());
 	}
@@ -320,11 +337,8 @@ internal static class CoreXceptionExtensions {
 		var message = new StringBuilder()
 			.Append("Index ").Append(e.Helpers.LiteralEncode(indexName))
 			.Append(" with value ").Append(e.Helpers.GetStringRepresentation(indexValue))
-			.Append(" is out of range: ").Append(indexName).Append(" ");
-
-		message.Append(e.Helpers.SafeToString(reason));
-		foreach(var r in reasonContinuation)
-			message.Append(e.Helpers.SafeToString(r));
+			.Append(" is out of range: ").Append(indexName).Append(" ")
+			.Append(e.Helpers.ReasonsToString(reason, reasonContinuation));
 
 		return new IndexOutOfRangeException(message.ToString());
 	}

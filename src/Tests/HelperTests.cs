@@ -29,6 +29,14 @@ namespace Tests.Tests {
 			Xception.Because.Helpers.SafeToString(null).Should().Be("<NULL>");
 		}
 
+		[Fact] public void ReasonsToString_should_insert_spaces_between_arguments() {
+			Xception.Because.Helpers.ReasonsToString("foo", "bar").Should().Be("foo bar");
+		}
+
+		[Fact] public void ReasonsToString_should_use_SafeToString() {
+			Xception.Because.Helpers.ReasonsToString(null, null, null).Should().Be("<NULL> <NULL> <NULL>");
+		}
+
 		[Fact] public void SafeToString_should_work_for_object_whose_ToString_throws_exception() {
 			Xception.Because.Helpers.SafeToString(new BuggyToString()).Should().Be("<TOSTRING_EXCEPTION>");
 		}

@@ -42,7 +42,7 @@ namespace Tests.Tests {
 		[Fact] public void IndexOutOfRange_should_generate_correct_message_for_multiple_reasons() {
 			int max = 100;
 			Xception.Because.IndexOutOfRange(() => max, "reason1", "reason2")
-			.Message.Should().Be("Index \"max\" with value \"100\" is out of range: max reason1reason2");
+			.Message.Should().Be("Index \"max\" with value \"100\" is out of range: max reason1 reason2");
 		}
 	}
 }

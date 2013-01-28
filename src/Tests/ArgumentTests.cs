@@ -35,7 +35,7 @@ namespace Tests.Tests {
 		[Fact] public void Argument_should_generate_correct_message_for_multiple_reasons() {
 			int foo = 100;
 			Xception.Because.Argument(() => foo, "reason1", "reason2")
-			.Message.Should().Be("Argument \"foo\" with value \"100\" is invalid: foo reason1reason2\r\nParameter name: foo");
+			.Message.Should().Be("Argument \"foo\" with value \"100\" is invalid: foo reason1 reason2\r\nParameter name: foo");
 		}
 	}
 }

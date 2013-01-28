@@ -35,6 +35,15 @@ if(percent > 100) throw Xception.Because.ArgumentOutOfRange(() => percent, "must
 if(i > items.Length) throw Xception.Because.IndexOutOfRange(() => i, "must be less than the number of items");
 ```
 
+Where possible, Xception will take an unlimited number of reason arguments, automatically convert them to strings, and insert a space between each one to allow easy creation of detailed error messages.
+
+```cs
+var MaxValue = 42;
+if(MaxValue < stringValue.Length) throw Xception.Because.Argument(() => stringValue, "can be at most", MaxValue, "characters in length");
+```
+
+Results in an exception with a message of the form `Argument "stringValue" with value "..." is invalid: stringValue can be at most 42 characters in length`.
+
 ## Integration
 
 Rather than referencing an assembly, Xception is designed to be included directly in your project as a source file.

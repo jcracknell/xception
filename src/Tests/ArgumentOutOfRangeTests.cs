@@ -35,7 +35,7 @@ namespace Tests.Tests {
 		[Fact] public void ArgumentOutOfRange_should_generate_correct_message_for_multiple_reasons() {
 			int max = 100;
 			Xception.Because.ArgumentOutOfRange(() => max, "reason1", "reason2")
-			.Message.Should().Be("Argument \"max\" with value \"100\" is out of range: max reason1reason2\r\nParameter name: max");
+			.Message.Should().Be("Argument \"max\" with value \"100\" is out of range: max reason1 reason2\r\nParameter name: max");
 		}
 	}
 }
