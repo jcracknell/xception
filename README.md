@@ -17,7 +17,26 @@ if(0 == someString.Length)
 	);
 ```
 
-The Xception equivalent is shorter, easier to read, resistant to refactoring, provides extra information in the exception free of charge, and has a negligable performance impact (as we are already in an error state any time the code is run).
+The Xception equivalent is shorter, easier to read, resistant to refactoring, and provides extra information in the exception free of charge.
+
+Using Xception has a small performance impact resulting from the instantiation of compiler-generated *display classes* for lambda expression closures. The C# compiler automatically generates a 'display class' to serve as the closed-over environment for expressions accessing stack-allocated variables. Consider the following code:
+
+```cs
+public void MyFunc(object maybeNull) {
+  if(null == maybeNull) throw Xception.Because.ArgumentNull(() => maybeNull);
+}
+```
+
+The lambda expression `() => maybeNull` references the stack-allocated local variable `maybeNull`, which may be popped from the stack before the expression is invoked. To address this problem, the C# compiler automatically rewrites `MyFunc` to resemble the following code, making `maybeNull` behave as though it were heap allocated (because it is):
+
+```cs
+public void MyFunc(object maybeNull) {
+  val env = new { maybeNull = maybeNull };
+  if(null == env.maybeNull) throw Xception.Because.ArgumentNull(() => env.maybeNull);
+}
+```
+
+Generally speaking, Xception is intended for (and naturally tends to be used in) high-value, high-level code requiring robust error reporting. For the vast majority of such use cases, the performance cost of Xception is negligable, and will be utterly eclipsed by I/O operations such as file or database accesses.
 
 ## Usage
 
@@ -46,8 +65,23 @@ Results in an exception with a message of the form `Argument "stringValue" with 
 
 ## Integration
 
-Rather than referencing an assembly, Xception is designed to be included directly in your project as a source file.
-Xception is defined in the global namespace, so no `usings` are required either.
+Rather than referencing an assembly, Xception is designed to be included directly in your project as a source file.  Xception is defined in the global namespace, so no `usings` are required either.
+
+Consider adding Xception to your project as a submodule:
+
+```
+git submodule add https://github.com/jcracknell/xception.git lib/xception
+```
+
+If you are developing a multi-project solution, you can add the same source file to multiple projects by manually editing the appropriate `.csproj` files:
+
+```xml
+<Project>
+  <ItemGroup>
+    <Compile Include="..\..\..\lib\xception\src\Xception.cs" />
+  </ItemGroup>
+</Project>
+```
 
 ## Extensibility
 
