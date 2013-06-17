@@ -25,6 +25,26 @@ namespace Tests.Tests {
       Xception.Because.Helpers.LiteralEncode("\n").Should().Be("\"\\n\"");
     }
 
+    [Fact] public void LiteralEncode_should_encode_null_char() {
+      Xception.Because.Helpers.LiteralEncode("a\0b").Should().Be("\"a\\0b\"");
+    }
+
+    [Fact] public void LiteralEncode_should_encode_escape_sequences() {
+      Xception.Because.Helpers.LiteralEncode("\b\t\n\f\r\"\\\0").Should().Be("\"\\b\\t\\n\\f\\r\\\"\\\\\\0\"");
+    }
+
+    [Fact] public void LiteralEncode_should_not_escape_single_quotes() {
+      Xception.Because.Helpers.LiteralEncode("'").Should().Be("\"'\"");
+    }
+
+    [Fact] public void LiteralEncode_should_encode_upper_ascii_characters() {
+      Xception.Because.Helpers.LiteralEncode("æ").Should().Be("\"\\x00e6\"");
+    }
+
+    [Fact] public void LiteralEncode_should_encode_unicode_characters() {
+      Xception.Because.Helpers.LiteralEncode("ɷ").Should().Be("\"\\x0277\"");
+    }
+
     [Fact] public void SafeToString_should_work_for_null_value() {
       Xception.Because.Helpers.SafeToString(null).Should().Be("<NULL>");
     }

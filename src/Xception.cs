@@ -22,6 +22,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
@@ -57,18 +58,11 @@ internal class XceptionHelpers {
   private static readonly MethodInfo objectToString = typeof(object).GetMethod("ToString");
 
   static XceptionHelpers() {
-    // Initialize array of characters to be escaped during literal encoding
     // Per http://msdn.microsoft.com/en-us/library/h21280bw.aspx
-    LITERALENCODE_ESCAPE_CHARS = new char[93];
-    LITERALENCODE_ESCAPE_CHARS['\a'] = 'a';
-    LITERALENCODE_ESCAPE_CHARS['\b'] = 'b';
-    LITERALENCODE_ESCAPE_CHARS['\f'] = 'f';
-    LITERALENCODE_ESCAPE_CHARS['\n'] = 'n';
-    LITERALENCODE_ESCAPE_CHARS['\r'] = 'r';
-    LITERALENCODE_ESCAPE_CHARS['\t'] = 't';
-    LITERALENCODE_ESCAPE_CHARS['"'] = '"';
-    LITERALENCODE_ESCAPE_CHARS['\\'] = '\\';
-    LITERALENCODE_ESCAPE_CHARS['?'] = '?';
+    var escapes = new string[] { "\aa", "\bb", "\ff", "\nn", "\rr", "\tt", "\vv", "\"\"", "\\\\", "??", "\00" };
+    LITERALENCODE_ESCAPE_CHARS = new char[escapes.Max(e => e[0]) + 1];
+    foreach(var escape in escapes)
+      LITERALENCODE_ESCAPE_CHARS[escape[0]] = escape[1];
   }
 
   public MemberInfo GetMemberInfoFromExpression(LambdaExpression expression) {
@@ -127,22 +121,21 @@ internal class XceptionHelpers {
   public string LiteralEncode(string s) {
     if(null == s) return "null";
 
-    var sb = new StringBuilder(s.Length * 2).Append('"');
-    var rp = 0;
-    while(rp < s.Length) {
-      var c = s[rp++];
-      if(LITERALENCODE_ESCAPE_CHARS.Length > c && 0 != LITERALENCODE_ESCAPE_CHARS[c])
+    var sb = new StringBuilder(s.Length + 2).Append('"');
+    for(var rp = 0; rp < s.Length; rp++) {
+      var c = s[rp];
+      if(c < LITERALENCODE_ESCAPE_CHARS.Length && '\0' != LITERALENCODE_ESCAPE_CHARS[c])
         sb.Append('\\').Append(LITERALENCODE_ESCAPE_CHARS[c]);
-      else if(' ' <= c && c <= '~')
+      else if('~' >= c && c >= ' ')
         sb.Append(c);
       else
-        sb.Append("\\x")
-          .Append(HEX_DIGIT[c >> 12 & 0xf])
-          .Append(HEX_DIGIT[c >> 8 & 0xf])
-          .Append(HEX_DIGIT[c >> 4 & 0xf])
-          .Append(HEX_DIGIT[c & 0xf]);
+        sb.Append(@"\x")
+          .Append(HEX_DIGIT[c >> 12 & 0x0F])
+          .Append(HEX_DIGIT[c >>  8 & 0x0F])
+          .Append(HEX_DIGIT[c >>  4 & 0x0F])
+          .Append(HEX_DIGIT[c       & 0x0F]);
     }
-
+    
     return sb.Append('"').ToString();
   }
 
